@@ -9,8 +9,8 @@ import time
 from dsl_data import data_loader_multi
 def run():
     batch_size = 8
-    image = tf.placeholder(dtype=tf.float32, shape=(batch_size, 512, 512, 3))
-    mask = tf.placeholder(dtype=tf.float32, shape=(batch_size, 512, 512, 2))
+    image = tf.placeholder(dtype=tf.float32, shape=(batch_size, config.image_size[0], config.image_size[1], 3))
+    mask = tf.placeholder(dtype=tf.float32, shape=(batch_size, config.image_size[0], config.image_size[1], 2))
     global_step = tf.train.get_or_create_global_step()
 
     lr = tf.train.exponential_decay(
@@ -25,7 +25,8 @@ def run():
     optimizer = tf.train.MomentumOptimizer(learning_rate=lr, momentum=0.9)
 
     train_op = slim.learning.create_train_op(train_tensors, optimizer)
-    vbs = []
+    '''
+       vbs = []
     for s in slim.get_variables():
         if 'resnet_v2_50' in s.name and 'Momentum' not in s.name and 'GroupNorm' not in s.name:
             vbs.append(s)
@@ -33,9 +34,9 @@ def run():
 
     def restore(sess):
         saver.restore(sess, config.check_dir)
-
-    sv = tf.train.Supervisor(logdir='drive1', summary_op=None, init_fn=restore, save_model_secs=100)
-    gen = get_drive(batch_size=batch_size, image_size=[512, 512])
+    '''
+    sv = tf.train.Supervisor(logdir='hour', summary_op=None, init_fn=None, save_model_secs=100)
+    gen = get_drive(batch_size=batch_size, image_size=config.image_size)
     qq = data_loader_multi.get_thread(gen, 1)
 
     with sv.managed_session() as sess:
@@ -69,12 +70,6 @@ def run():
                     plt.imshow(out[s, :, :, 1], aspect="auto", cmap='gray')
                     plt.savefig('dd.jpg')
 
-def eger():
-    tf.enable_eager_execution()
-    gen = get_drive(batch_size=4, image_size=[512, 512])
-    org_im, msk = next(gen)
-    print(sigmoid_cross_entropy_balanced(msk, msk))
-    print(nn_loss(msk, msk))
 
 
 if __name__ == '__main__':

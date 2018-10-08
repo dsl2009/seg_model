@@ -58,6 +58,16 @@ def seg_arg():
             padding = 'SAME'):
         with slim.arg_scope([slim.batch_norm],**batch_norm_params) as sc:
             return sc
+def seg_arg_gn():
+
+    with slim.arg_scope(
+            [slim.conv2d],
+            weights_regularizer=slim.l2_regularizer(0.00001),
+            activation_fn=tf.nn.relu,
+            normalizer_fn=slim.group_norm,
+            padding = 'SAME') as sc:
+        return sc
+
 
 
 
@@ -75,7 +85,7 @@ def resnet_v2_50(inputs,
       resnet_v2_block('block1', base_depth=64, num_units=3, stride=2),
       resnet_v2_block('block2', base_depth=128, num_units=4, stride=2),
       resnet_v2_block('block3', base_depth=256, num_units=6, stride=2),
-      resnet_v2_block('block4', base_depth=512, num_units=3, stride=2),
+      resnet_v2_block('block4', base_depth=512, num_units=3, stride=1),
   ]
   return resnet_v2(inputs, blocks, num_classes, is_training=is_training,
                    global_pool=global_pool, output_stride=output_stride,
@@ -143,25 +153,25 @@ def fpn(img):
     c4 = endpoint['resnet_v2_50/block4']
     with slim.arg_scope(seg_arg()):
         c3_1 = slim.conv2d(c3, num_outputs=256, kernel_size=1, rate=1)
-        c3_2 = slim.conv2d(c3, num_outputs=256, kernel_size=3, rate=6)
-        c3_3 = slim.conv2d(c3, num_outputs=256, kernel_size=3, rate=12)
-        c3_4 = slim.conv2d(c3, num_outputs=256, kernel_size=3, rate=18)
+        c3_2 = slim.conv2d(c3, num_outputs=256, kernel_size=3, rate=4)
+        c3_3 = slim.conv2d(c3, num_outputs=256, kernel_size=3, rate=6)
+        c3_4 = slim.conv2d(c3, num_outputs=256, kernel_size=3, rate=8)
         c31 = tf.concat([c3_1, c3_2, c3_3, c3_4], axis=3)
         c31 = slim.conv2d(c3, num_outputs=256, kernel_size=1)
         c31 = tf.image.resize_bilinear(c3, tf.shape(c1)[1:3])
 
         c4_1 = slim.conv2d(c4, num_outputs=256, kernel_size=1, rate=1)
-        c4_2 = slim.conv2d(c4, num_outputs=256, kernel_size=3, rate=6)
-        c4_3 = slim.conv2d(c4, num_outputs=256, kernel_size=3, rate=12)
-        c4_4 = slim.conv2d(c4, num_outputs=256, kernel_size=3, rate=18)
+        c4_2 = slim.conv2d(c4, num_outputs=256, kernel_size=3, rate=4)
+        c4_3 = slim.conv2d(c4, num_outputs=256, kernel_size=3, rate=6)
+        c4_4 = slim.conv2d(c4, num_outputs=256, kernel_size=3, rate=8)
         c41 = tf.concat([c4_1, c4_2, c4_3, c4_4], axis=3)
         c41 = slim.conv2d(c4, num_outputs=256, kernel_size=1)
         c41 = tf.image.resize_bilinear(c4, tf.shape(c1)[1:3])
 
         c2_1 = slim.conv2d(c2, num_outputs=256, kernel_size=1, rate=1)
-        c2_2 = slim.conv2d(c2, num_outputs=256, kernel_size=3, rate=6)
-        c2_3 = slim.conv2d(c2, num_outputs=256, kernel_size=3, rate=12)
-        c2_4 = slim.conv2d(c2, num_outputs=256, kernel_size=3, rate=18)
+        c2_2 = slim.conv2d(c2, num_outputs=256, kernel_size=3, rate=4)
+        c2_3 = slim.conv2d(c2, num_outputs=256, kernel_size=3, rate=6)
+        c2_4 = slim.conv2d(c2, num_outputs=256, kernel_size=3, rate=8)
         c21 = tf.concat([c2_1, c2_2, c2_3, c2_4], axis=3)
         c21 = slim.conv2d(c2, num_outputs=256, kernel_size=1)
         c21 = tf.image.resize_bilinear(c2, tf.shape(c1)[1:3])
@@ -176,5 +186,5 @@ def fpn(img):
                 ):
                 x = slim.conv2d(x1, num_outputs=2, kernel_size=3, normalizer_fn=None, activation_fn=None)
                 x = tf.image.resize_bilinear(x, tf.shape(img)[1:3])
-    return x,x1
+    return x
 

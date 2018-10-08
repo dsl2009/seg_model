@@ -198,12 +198,13 @@ BDD = ['bike', 'bus', 'car', 'motor', 'person', 'rider','traffic light', 'traffi
 Tree = ['tree']
 MAX_GT = 100
 batch_size = 8
-image_size = [768,1280]
+image_size = [512,512]
 mask_pool_shape = 28
 norm_value = 2.0
 mask_weight_loss = 2.0
 mask_train = 100
 flag = 1
+num_class = 2
 local_voc_dir = '/media/dsl/20d6b919-92e1-4489-b2be-a092290668e4/VOCdevkit/VOCdevkit'
 server_voc_dir = '/data_set/data/VOCdevkit'
 
