@@ -1,5 +1,6 @@
-from dsl_data import aichanellger
+from dsl_data import aichanellger,BigLand
 from dsl_data.bdd import BDD_AREA
+from dsl_data import xair_guoshu
 import random
 import numpy as np
 def get_leaf(batch_size,is_shuff = True,image_size=512):
@@ -64,6 +65,85 @@ def get_drive(batch_size,is_shuff = True,image_size=None):
             if b== 0:
                 images = np.zeros(shape=[batch_size,image_size[0],image_size[1],3],dtype=np.float32)
                 masks = np.zeros(shape=[batch_size, image_size[0], image_size[1],2], dtype=np.int)
+                images[b,:,:,:] = img
+                masks[b,:,:] = mask
+                b=b+1
+                index = index + 1
+            else:
+                images[b, :, :, :] = img
+                masks[b, :, :] = mask
+                b = b + 1
+                index = index + 1
+            if b>=batch_size:
+                yield [images,masks]
+                b = 0
+
+            if index>= data_set.len():
+                index = 0
+def get_land(batch_size,is_shuff = True,image_size=None):
+    if image_size is None:
+        image_size = [256, 256]
+    data_set = BigLand.BigLandMaskCoc(image_size = image_size)
+    idx = list(range(data_set.len()))
+    print(data_set.len())
+    b = 0
+    index = 0
+    while True:
+        if True:
+            if is_shuff and index==0:
+                random.shuffle(idx)
+            try:
+                img, mask = data_set.pull_item(idx[index])
+            except:
+                index = index+1
+                print(index)
+                continue
+            img = (img - [123.15, 115.90, 103.06])/255.0
+            if b== 0:
+                images = np.zeros(shape=[batch_size,image_size[0],image_size[1],3],dtype=np.float32)
+                masks = np.zeros(shape=[batch_size, image_size[0], image_size[1],3], dtype=np.float32)
+                images[b,:,:,:] = img
+                masks[b,:,:] = mask
+                b=b+1
+                index = index + 1
+            else:
+                images[b, :, :, :] = img
+                masks[b, :, :] = mask
+                b = b + 1
+                index = index + 1
+            if b>=batch_size:
+                yield [images,masks]
+                b = 0
+
+            if index>= data_set.len():
+                index = 0
+
+def get_tree(batch_size,is_shuff = True,image_size=None):
+    if image_size is None:
+        image_size = [256, 256]
+    root = '/media/dsl/20d6b919-92e1-4489-b2be-a092290668e4/AIChallenger2018/zuixin/be224/biao_zhu'
+    data_set = xair_guoshu.Tree_edge(root_dr=root, image_size = image_size)
+    idx = list(range(data_set.len()))
+    print(data_set.len())
+    b = 0
+    index = 0
+    while True:
+        if True:
+            if is_shuff and index==0:
+                random.shuffle(idx)
+            if True:
+                img, mask = data_set.pull_item(idx[index])
+
+                index = index+1
+
+
+            img = img[:,:,0:3]
+            img = (img - [123.15, 115.90, 103.06])/255.0
+            mask = mask/255.0
+            mask = np.expand_dims(mask, -1)
+            if b== 0:
+                images = np.zeros(shape=[batch_size,image_size[0],image_size[1],3],dtype=np.float32)
+                masks = np.zeros(shape=[batch_size, image_size[0], image_size[1],1], dtype=np.float32)
                 images[b,:,:,:] = img
                 masks[b,:,:] = mask
                 b=b+1

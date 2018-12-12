@@ -10,7 +10,7 @@ from dsl_data import data_loader_multi
 def run():
     batch_size = 4
     image = tf.placeholder(dtype=tf.float32, shape=(batch_size, config.image_size[0], config.image_size[1], 3))
-    mask = tf.placeholder(dtype=tf.float32, shape=(batch_size, config.image_size[0], config.image_size[1], 1))
+    mask = tf.placeholder(dtype=tf.float32, shape=(batch_size, config.image_size[0], config.image_size[1], 6))
     global_step = tf.train.get_or_create_global_step()
 
     lr = tf.train.exponential_decay(
@@ -58,7 +58,7 @@ def run():
 
                     plt.subplot(222)
                     plt.title('step1')
-                    plt.imshow(msk[s, :, :, 0], aspect="auto", cmap='gray')
+                    plt.imshow(msk[s, :, :, 1], aspect="auto", cmap='gray')
 
                     plt.subplot(223)
                     plt.title('final')
@@ -66,9 +66,8 @@ def run():
                     plt.imshow(out[s, :, :, 0], aspect="auto", cmap='gray')
                     plt.subplot(224)
                     plt.title('final')
-                    plt.imshow(out[s, :, :, 0], aspect="auto", cmap='gray')
+                    plt.imshow(out[s, :, :, 1], aspect="auto", cmap='gray')
                     plt.savefig('dd.jpg')
-
 
 
 

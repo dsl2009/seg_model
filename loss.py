@@ -77,6 +77,20 @@ def sec_loss(result, labels):
     los = tf.sqrt(los)
     return los
 
+def sec_losses(result, labels, num_labels):
+    result = tf.nn.sigmoid(result)
+    y = tf.cast(labels, tf.float32)
+    count_pos = tf.reduce_sum(y)
+    los = []
+    for i in range(num_labels):
+        for j in range(i+1, num_labels):
+            mask1 = result[:, :, :, i]
+            mask2 = result[:, :, :, j]
+            los.append(tf.reduce_sum(mask1 * mask2))
+    los = tf.reduce_sum(los)/count_pos
+    los = tf.sqrt(los)
+    return los
+
 
 def get_loss(img,labels):
     #result = resnet50.fpn(img)

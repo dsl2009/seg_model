@@ -16,6 +16,14 @@ def cornet_arg():
             padding = 'SAME'):
         with slim.arg_scope([slim.batch_norm],**batch_norm_params) as sc:
             return sc
+def group_arg():
+    with slim.arg_scope(
+            [slim.conv2d],
+            weights_regularizer=slim.l2_regularizer(0.0001),
+            activation_fn=tf.nn.relu,
+            normalizer_fn=slim.group_norm,
+            padding = 'SAME') as sc:
+            return sc
 
 def residual(x, out_dim, stride = 1, scope =None):
     with tf.variable_scope(scope):
@@ -49,7 +57,7 @@ def model_list(x, n=5, n_dim=None, repeats = None):
 
 def fpn(image):
     with tf.variable_scope('cornet'):
-        with slim.arg_scope(cornet_arg()):
+        with slim.arg_scope(group_arg()):
             inter = slim.conv2d(image, num_outputs=128, kernel_size=7, stride=2)
             inter = slim.conv2d(inter, num_outputs=256, kernel_size=3, stride=2)
             kps = model_list(inter)
@@ -58,9 +66,9 @@ def fpn(image):
 def fcn(image):
     fea = fpn(image)
     c2_1 = slim.conv2d(fea, num_outputs=96, kernel_size=1, rate=1)
-    c2_2 = slim.conv2d(fea, num_outputs=256, kernel_size=3, rate=4)
-    c2_3 = slim.conv2d(fea, num_outputs=256, kernel_size=3, rate=6)
-    c2_4 = slim.conv2d(fea, num_outputs=256, kernel_size=3, rate=8)
+    c2_2 = slim.conv2d(fea, num_outputs=128, kernel_size=3, rate=4)
+    c2_3 = slim.conv2d(fea, num_outputs=128, kernel_size=3, rate=6)
+    c2_4 = slim.conv2d(fea, num_outputs=128, kernel_size=3, rate=8)
     c21 = tf.concat([c2_1, c2_2, c2_3, c2_4], axis=3)
     c21 = slim.conv2d(c21, num_outputs=256, kernel_size=1)
 
@@ -69,7 +77,7 @@ def fcn(image):
             weights_regularizer=slim.l2_regularizer(0.0001),
             weights_initializer=tf.truncated_normal_initializer(stddev=0.01),
     ):
-        x = slim.conv2d(fea, num_outputs=2, kernel_size=3, normalizer_fn=None, activation_fn=None)
+        x = slim.conv2d(c21, num_outputs=2, kernel_size=3, normalizer_fn=None, activation_fn=None)
         x = tf.image.resize_bilinear(x, tf.shape(image)[1:3])
         return x
 

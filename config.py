@@ -197,8 +197,8 @@ BDD = ['bike', 'bus', 'car', 'motor', 'person', 'rider','traffic light', 'traffi
 
 Tree = ['tree']
 MAX_GT = 100
-batch_size = 8
-image_size = [512,512]
+batch_size = 1
+image_size = [256,256]
 mask_pool_shape = 28
 norm_value = 2.0
 mask_weight_loss = 2.0
@@ -220,7 +220,7 @@ server_check = '/data_set/check/inception_v2.ckpt'
 local_save = '/home/dsl/all_check/obj_detect/bn-640'
 server_save = '/data_set/check/voc_ssd_yolo'
 
-is_use_group_norm = False
+is_use_group_norm = True
 is_use_last = True
 if not is_use_last:
     feature_stride = [8, 16, 32,64,128]
@@ -236,7 +236,7 @@ if flag == 1:
     voc_dir = local_voc_dir
     coco_image_dir = local_coco_dir
     annotations = local_coco_ann
-    batch_size = 8
+    batch_size = 1
 elif flag ==2:
     save_dir = server_save
     check_dir = server_check
